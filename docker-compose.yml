@@ -16,5 +16,5 @@ services:
     volumes:
       - /coder:/config
     ports:
-      - 8443:8443
+      - 8080:8443
     restart: unless-stopped
