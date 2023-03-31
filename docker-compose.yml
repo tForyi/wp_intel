@@ -1,32 +1,38 @@
-services:
-  database:
-    # We use a mariadb image which supports both amd64 & arm64 architecture
-    #image: mariadb:10.6.4-focal
-    # If you really want to use MySQL, uncomment the following line
-    image: mysql:5.7
-    command: '--default-authentication-plugin=mysql_native_password'
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=x218914630j
-      - MYSQL_DATABASE=wordpress
-      - MYSQL_USER=wdAdmin
-      - MYSQL_PASSWORD="Ww12345!"
-    expose:
-      - 3306:3306
-  blog:
-    image: wordpress:6
+# ==============================================================================
+# Copyright (C) 2021 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+# ==============================================================================
+version: "3"
+networks: 
+  ovms-bridge:
+    driver: bridge
+services: 
+  ovms-server:
+    image: jkalapati/ovms-server
+    hostname: ovms-server
+    ports: 
+      - "9000:9000"
+      - "9001:9001"
+    expose: 
+      - "9000"
+    networks: 
+      - ovms-bridge
+    command: [--port=9000, --model_name=face-detection, --model_path=/models, --shape=auto]
+    tty: 
+      true
+      
+  ovms-client: 
+    image: jkalapati/ovms-client
+    environment: 
+      SERVER_NAME: ovms-server
+      GRPC_PORT: 9000
     ports:
-      - 80:80
-    restart: always
-    environment:
-      - WORDPRESS_DB_HOST=database
-      - WORDPRESS_DB_NAME=wordpress
-      - WORDPRESS_DB_USER=wdAdmin
-      - WORDPRESS_DB_PASSWORD="Ww12345!"
+      - "8000:8000"
+    networks: 
+      - ovms-bridge
     depends_on:
-      database:
-        condition: service_healthy
-volumes:
-  db_data:
+      - ovms-server
+    links: 
+      - ovms-server
+    tty:
+      true
